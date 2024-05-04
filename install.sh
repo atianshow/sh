@@ -39,82 +39,67 @@ update_system() {
 # Function to install Docker
 install_docker() {
     echo "Installing Docker..."
-    if ! curl -fsSL https://get.docker.com -o get-docker.sh; then
-        echo "无法下载 Docker 安装脚本，请检查网络连接。"
-        exit 1
-    fi
-    if ! sudo sh get-docker.sh; then
-        echo "安装 Docker 失败，请检查错误信息。"
-        exit 1
-    fi
-    if ! sudo usermod -aG docker $USER; then
-        echo "添加用户到 Docker 用户组失败，请检查权限。"
-        exit 1
-    fi
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+    sudo usermod -aG docker $USER
+
+    # 显示已安装的容器名称
+    echo "已安装的软件："
+    docker ps --format "table {{.Names}}" | tail -n +2
 }
 
 # 函数：安装 Docker Compose
 install_docker_compose() {
     echo "正在安装 Docker Compose..."
-    if ! sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose; then
-        echo "无法下载 Docker Compose，请检查网络连接。"
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    if [ $? -eq 0 ]; then
+        echo "Docker Compose 安装成功。"
+        # 将 Docker Compose 命令添加到 PATH 中
+        sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+    else
+        echo "Docker Compose 安装失败，请检查错误信息。"
         exit 1
     fi
-    if ! sudo chmod +x /usr/local/bin/docker-compose; then
-        echo "赋予执行权限给 Docker Compose 失败，请检查权限。"
-        exit 1
-    fi
-    if ! sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose; then
-        echo "创建 Docker Compose 符号链接失败，请检查权限。"
-        exit 1
-    fi
-    echo "Docker Compose 安装成功。"
 }
 
 # 函数：安装 Portainer
 install_portainer() {
     echo "正在安装 Portainer..."
-    if ! docker volume create portainer_data; then
-        echo "创建 Portainer 数据卷失败，请检查 Docker 是否正确安装。"
+    docker volume create portainer_data
+    docker run -d -p 9000:9000 -p 8000:8000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce
+    if [ $? -eq 0 ]; then
+        echo "Portainer 安装成功。访问 http://localhost:9000 进行配置。"
+    else
+        echo "Portainer 安装失败，请检查错误信息。"
         exit 1
     fi
-    if ! docker run -d -p 9000:9000 -p 8000:8000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce; then
-        echo "安装 Portainer 失败，请检查错误信息。"
-        exit 1
-    fi
-    echo "Portainer 安装成功。访问 http://localhost:9000 进行配置。"
 }
 
 # 函数：安装 Nginx Proxy Manager
 install_nginx_proxy_manager() {
     echo "正在安装 Nginx Proxy Manager..."
-    if ! docker volume create npm_data; then
-        echo "创建 Nginx Proxy Manager 数据卷失败，请检查 Docker 是否正确安装。"
+    docker volume create npm_data
+    docker run -d -p 80:80 -p 443:443 -p 81:81 --name=npm --restart=always -v npm_data:/data -v ./letsencrypt:/etc/letsencrypt jc21/nginx-proxy-manager:latest
+    if [ $? -eq 0 ]; then
+        echo "Nginx Proxy Manager 安装成功。访问 http://localhost:81 进行配置。"
+    else
+        echo "Nginx Proxy Manager 安装失败，请检查错误信息。"
         exit 1
     fi
-    if ! docker run -d -p 80:80 -p 443:443 -p 81:81 --name=npm --restart=always -v npm_data:/data -v ./letsencrypt:/etc/letsencrypt jc21/nginx-proxy-manager:latest; then
-        echo "安装 Nginx Proxy Manager 失败，请检查错误信息。"
-        exit 1
-    fi
-    echo "Nginx Proxy Manager 安装成功。访问 http://localhost:81 进行配置。"
 }
 
 # 函数：安装 ServerStatus
 install_serverstatus() {
     echo "正在安装 ServerStatus..."
-    if ! wget --no-check-certificate -qO ~/serverstatus-config.json https://raw.githubusercontent.com/cppla/ServerStatus/master/server/config.json; then
-        echo "下载 ServerStatus 配置文件失败，请检查网络连接。"
+    wget --no-check-certificate -qO ~/serverstatus-config.json https://raw.githubusercontent.com/cppla/ServerStatus/master/server/config.json && mkdir ~/serverstatus-monthtraffic
+    docker run -d --restart=always --name=serverstatus -v ~/serverstatus-config.json:/ServerStatus/server/config.json -v ~/serverstatus-monthtraffic:/usr/share/nginx/html/json -p 7777:80 -p 35601:35601 cppla/serverstatus:latest
+    if [ $? -eq 0 ]; then
+        echo "ServerStatus 安装成功。访问 http://localhost:7777 查看状态。"
+    else
+        echo "ServerStatus 安装失败，请检查错误信息。"
         exit 1
     fi
-    if ! mkdir -p ~/serverstatus-monthtraffic; then
-        echo "创建 ServerStatus 目录失败，请检查权限。"
-        exit 1
-    fi
-    if ! docker run -d --restart=always --name=serverstatus -v ~/serverstatus-config.json:/ServerStatus/server/config.json -v ~/serverstatus-monthtraffic:/usr/share/nginx/html/json -p 7777:80 -p 35601:35601 cppla/serverstatus:latest; then
-        echo "安装 ServerStatus 失败，请检查错误信息。"
-        exit 1
-    fi
-    echo "ServerStatus 安装成功。访问 http://localhost:7777 查看状态。"
 }
 
 # 函数：显示安装选项并安装所选的软件
@@ -154,9 +139,6 @@ choose_and_install() {
             echo "无效的选项，请重新选择。"
             ;;
         esac
-
-        echo "已安装的软件："
-        docker ps --format "table {{.Names}}" | tail -n +2
     done
 }
 
