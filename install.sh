@@ -102,6 +102,56 @@ install_serverstatus() {
     fi
 }
 
+# 函数：查询 Docker 运行状态
+query_docker_status() {
+    echo "Docker 运行状态："
+    if docker --version &> /dev/null; then
+        docker ps
+    else
+        echo "Docker 未安装或运行失败。"
+    fi
+}
+
+# 函数：查询 Docker Compose 运行状态
+query_docker_compose_status() {
+    echo "Docker Compose 运行状态："
+    if docker-compose --version &> /dev/null; then
+        docker-compose version
+    else
+        echo "Docker Compose 未安装或运行失败。"
+    fi
+}
+
+# 函数：查询 Portainer 运行状态
+query_portainer_status() {
+    echo "Portainer 运行状态："
+    if docker ps -a --format "table {{.Names}}" | grep -q "portainer"; then
+        echo "Portainer 已安装并运行。"
+    else
+        echo "Portainer 未安装或未运行。"
+    fi
+}
+
+# 函数：查询 Nginx Proxy Manager 运行状态
+query_nginx_proxy_manager_status() {
+    echo "Nginx Proxy Manager 运行状态："
+    if docker ps -a --format "table {{.Names}}" | grep -q "npm"; then
+        echo "Nginx Proxy Manager 已安装并运行。"
+    else
+        echo "Nginx Proxy Manager 未安装或未运行。"
+    fi
+}
+
+# 函数：查询 ServerStatus 运行状态
+query_serverstatus_status() {
+    echo "ServerStatus 运行状态："
+    if docker ps -a --format "table {{.Names}}" | grep -q "serverstatus"; then
+        echo "ServerStatus 已安装并运行。"
+    else
+        echo "ServerStatus 未安装或未运行。"
+    fi
+}
+
 # 函数：显示安装选项并安装所选的软件
 choose_and_install() {
     while true; do
@@ -142,6 +192,45 @@ choose_and_install() {
     done
 }
 
+# 函数：查询全部安装的软件的运行状态
+query_installed_software_status() {
+    while true; do
+        echo "请选择要查询的软件运行状态："
+        echo "1. Docker"
+        echo "2. Docker Compose"
+        echo "3. Portainer"
+        echo "4. Nginx Proxy Manager"
+        echo "5. ServerStatus"
+        echo "6. 返回主菜单"
+
+        read -p "请输入选项编号: " choice
+
+        case "$choice" in
+        1)
+            query_docker_status
+            ;;
+        2)
+            query_docker_compose_status
+            ;;
+        3)
+            query_portainer_status
+            ;;
+        4)
+            query_nginx_proxy_manager_status
+            ;;
+        5)
+            query_serverstatus_status
+            ;;
+        6)
+            break
+            ;;
+        *)
+            echo "无效的选项，请重新选择。"
+            ;;
+        esac
+    done
+}
+
 # 主函数
 main() {
     # 更新系统
@@ -155,6 +244,9 @@ main() {
 
     # 选择并安装软件
     choose_and_install
+
+    # 查询全部安装的软件的运行状态
+    query_installed_software_status
 }
 
 # 执行主函数
