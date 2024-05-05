@@ -48,7 +48,27 @@ install_docker() {
     docker ps --format "table {{.Names}}" | tail -n +2
 }
 
-# 函数：安装 Docker Compose
+# Function to query Docker running status
+query_docker_status() {
+    echo "查询 Docker 运行状态..."
+    docker ps --format "table {{.Names}}\t{{.Status}}"
+}
+
+# Function to uninstall Docker
+uninstall_docker() {
+    echo "正在卸载 Docker..."
+    sudo apt-get purge docker-ce docker-ce-cli containerd.io
+    sudo rm -rf /var/lib/docker
+    echo "Docker 已成功卸载。"
+}
+
+# Function to check Docker port usage
+check_docker_port() {
+    echo "检查 Docker 端口占用情况..."
+    sudo netstat -tuln | grep docker
+}
+
+# Function to install Docker Compose
 install_docker_compose() {
     echo "正在安装 Docker Compose..."
     sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -63,7 +83,21 @@ install_docker_compose() {
     fi
 }
 
-# 函数：安装 Portainer
+# Function to query Docker Compose running status
+query_docker_compose_status() {
+    echo "查询 Docker Compose 运行状态..."
+    docker-compose ps --format "table {{.Name}}\t{{.State}}"
+}
+
+# Function to uninstall Docker Compose
+uninstall_docker_compose() {
+    echo "正在卸载 Docker Compose..."
+    sudo rm -f /usr/local/bin/docker-compose
+    sudo rm -f /usr/bin/docker-compose
+    echo "Docker Compose 已成功卸载。"
+}
+
+# Function to install Portainer
 install_portainer() {
     echo "正在安装 Portainer..."
     docker volume create portainer_data
@@ -76,7 +110,22 @@ install_portainer() {
     fi
 }
 
-# 函数：安装 Nginx Proxy Manager
+# Function to query Portainer running status
+query_portainer_status() {
+    echo "查询 Portainer 运行状态..."
+    docker ps -f "ancestor=portainer/portainer-ce" --format "table {{.Names}}\t{{.Status}}"
+}
+
+# Function to uninstall Portainer
+uninstall_portainer() {
+    echo "正在卸载 Portainer..."
+    docker stop portainer
+    docker rm portainer
+    docker volume rm portainer_data
+    echo "Portainer 已成功卸载。"
+}
+
+# Function to install Nginx Proxy Manager
 install_nginx_proxy_manager() {
     echo "正在安装 Nginx Proxy Manager..."
     docker volume create npm_data
@@ -89,7 +138,22 @@ install_nginx_proxy_manager() {
     fi
 }
 
-# 函数：安装 ServerStatus
+# Function to query Nginx Proxy Manager running status
+query_nginx_proxy_manager_status() {
+    echo "查询 Nginx Proxy Manager 运行状态..."
+    docker ps -f "ancestor=jc21/nginx-proxy-manager" --format "table {{.Names}}\t{{.Status}}"
+}
+
+# Function to uninstall Nginx Proxy Manager
+uninstall_nginx_proxy_manager() {
+    echo "正在卸载 Nginx Proxy Manager..."
+    docker stop npm
+    docker rm npm
+    docker volume rm npm_data
+    echo "Nginx Proxy Manager 已成功卸载。"
+}
+
+# Function to install ServerStatus
 install_serverstatus() {
     echo "正在安装 ServerStatus..."
     wget --no-check-certificate -qO ~/serverstatus-config.json https://raw.githubusercontent.com/cppla/ServerStatus/master/server/config.json && mkdir ~/serverstatus-monthtraffic
@@ -102,60 +166,24 @@ install_serverstatus() {
     fi
 }
 
-# 函数：查询 Docker 运行状态
-query_docker_status() {
-    echo "Docker 运行状态："
-    if docker --version &> /dev/null; then
-        docker ps
-    else
-        echo "Docker 未安装或运行失败。"
-    fi
-}
-
-# 函数：查询 Docker Compose 运行状态
-query_docker_compose_status() {
-    echo "Docker Compose 运行状态："
-    if docker-compose --version &> /dev/null; then
-        docker-compose version
-    else
-        echo "Docker Compose 未安装或运行失败。"
-    fi
-}
-
-# 函数：查询 Portainer 运行状态
-query_portainer_status() {
-    echo "Portainer 运行状态："
-    if docker ps -a --format "table {{.Names}}" | grep -q "portainer"; then
-        echo "Portainer 已安装并运行。"
-    else
-        echo "Portainer 未安装或未运行。"
-    fi
-}
-
-# 函数：查询 Nginx Proxy Manager 运行状态
-query_nginx_proxy_manager_status() {
-    echo "Nginx Proxy Manager 运行状态："
-    if docker ps -a --format "table {{.Names}}" | grep -q "npm"; then
-        echo "Nginx Proxy Manager 已安装并运行。"
-    else
-        echo "Nginx Proxy Manager 未安装或未运行。"
-    fi
-}
-
-# 函数：查询 ServerStatus 运行状态
+# Function to query ServerStatus running status
 query_serverstatus_status() {
-    echo "ServerStatus 运行状态："
-    if docker ps -a --format "table {{.Names}}" | grep -q "serverstatus"; then
-        echo "ServerStatus 已安装并运行。"
-    else
-        echo "ServerStatus 未安装或未运行。"
-    fi
+    echo "查询 ServerStatus 运行状态..."
+    docker ps -f "ancestor=cppla/serverstatus" --format "table {{.Names}}\t{{.Status}}"
 }
 
-# 函数：显示安装选项并安装所选的软件
-choose_and_install() {
+# Function to uninstall ServerStatus
+uninstall_serverstatus() {
+    echo "正在卸载 ServerStatus..."
+    docker stop serverstatus
+    docker rm serverstatus
+    echo "ServerStatus 已成功卸载。"
+}
+
+# Function to choose and perform actions
+choose_and_perform_action() {
     while true; do
-        echo "请选择要安装的软件："
+        echo "请选择要执行的操作："
         echo "1. Docker"
         echo "2. Docker Compose"
         echo "3. Portainer"
@@ -167,19 +195,24 @@ choose_and_install() {
 
         case "$choice" in
         1)
-            install_docker
+            echo "你选择了 Docker。"
+            docker_actions
             ;;
         2)
-            install_docker_compose
+            echo "你选择了 Docker Compose。"
+            docker_compose_actions
             ;;
         3)
-            install_portainer
+            echo "你选择了 Portainer。"
+            portainer_actions
             ;;
         4)
-            install_nginx_proxy_manager
+            echo "你选择了 Nginx Proxy Manager。"
+            nginx_proxy_manager_actions
             ;;
         5)
-            install_serverstatus
+            echo "你选择了 ServerStatus。"
+            serverstatus_actions
             ;;
         6)
             echo "退出安装。"
@@ -192,37 +225,157 @@ choose_and_install() {
     done
 }
 
-# 函数：查询全部安装的软件的运行状态
-query_installed_software_status() {
+# Function to perform Docker actions
+docker_actions() {
     while true; do
-        echo "请选择要查询的软件运行状态："
-        echo "1. Docker"
-        echo "2. Docker Compose"
-        echo "3. Portainer"
-        echo "4. Nginx Proxy Manager"
-        echo "5. ServerStatus"
-        echo "6. 返回主菜单"
+        echo "请选择 Docker 的操作："
+        echo "1. 安装 Docker"
+        echo "2. 查询 Docker 运行状态"
+        echo "3. 卸载 Docker"
+        echo "4. 检查 Docker 端口占用情况"
+        echo "5. 返回上一级菜单"
 
         read -p "请输入选项编号: " choice
 
         case "$choice" in
         1)
+            install_docker
+            ;;
+        2)
             query_docker_status
+            ;;
+        3)
+            uninstall_docker
+            ;;
+        4)
+            check_docker_port
+            ;;
+        5)
+            return
+            ;;
+        *)
+            echo "无效的选项，请重新选择。"
+            ;;
+        esac
+    done
+}
+
+# Function to perform Docker Compose actions
+docker_compose_actions() {
+    while true; do
+        echo "请选择 Docker Compose 的操作："
+        echo "1. 安装 Docker Compose"
+        echo "2. 查询 Docker Compose 运行状态"
+        echo "3. 卸载 Docker Compose"
+        echo "4. 返回上一级菜单"
+
+        read -p "请输入选项编号: " choice
+
+        case "$choice" in
+        1)
+            install_docker_compose
             ;;
         2)
             query_docker_compose_status
             ;;
         3)
-            query_portainer_status
+            uninstall_docker_compose
             ;;
         4)
+            return
+            ;;
+        *)
+            echo "无效的选项，请重新选择。"
+            ;;
+        esac
+    done
+}
+
+# Function to perform Portainer actions
+portainer_actions() {
+    while true; do
+        echo "请选择 Portainer 的操作："
+        echo "1. 安装 Portainer"
+        echo "2. 查询 Portainer 运行状态"
+        echo "3. 卸载 Portainer"
+        echo "4. 返回上一级菜单"
+
+        read -p "请输入选项编号: " choice
+
+        case "$choice" in
+        1)
+            install_portainer
+            ;;
+        2)
+            query_portainer_status
+            ;;
+        3)
+            uninstall_portainer
+            ;;
+        4)
+            return
+            ;;
+        *)
+            echo "无效的选项，请重新选择。"
+            ;;
+        esac
+    done
+}
+
+# Function to perform Nginx Proxy Manager actions
+nginx_proxy_manager_actions() {
+    while true; do
+        echo "请选择 Nginx Proxy Manager 的操作："
+        echo "1. 安装 Nginx Proxy Manager"
+        echo "2. 查询 Nginx Proxy Manager 运行状态"
+        echo "3. 卸载 Nginx Proxy Manager"
+        echo "4. 返回上一级菜单"
+
+        read -p "请输入选项编号: " choice
+
+        case "$choice" in
+        1)
+            install_nginx_proxy_manager
+            ;;
+        2)
             query_nginx_proxy_manager_status
             ;;
-        5)
+        3)
+            uninstall_nginx_proxy_manager
+            ;;
+        4)
+            return
+            ;;
+        *)
+            echo "无效的选项，请重新选择。"
+            ;;
+        esac
+    done
+}
+
+# Function to perform ServerStatus actions
+serverstatus_actions() {
+    while true; do
+        echo "请选择 ServerStatus 的操作："
+        echo "1. 安装 ServerStatus"
+        echo "2. 查询 ServerStatus 运行状态"
+        echo "3. 卸载 ServerStatus"
+        echo "4. 返回上一级菜单"
+
+        read -p "请输入选项编号: " choice
+
+        case "$choice" in
+        1)
+            install_serverstatus
+            ;;
+        2)
             query_serverstatus_status
             ;;
-        6)
-            break
+        3)
+            uninstall_serverstatus
+            ;;
+        4)
+            return
             ;;
         *)
             echo "无效的选项，请重新选择。"
@@ -242,11 +395,8 @@ main() {
     # 执行安装脚本
     execute_script
 
-    # 选择并安装软件
-    choose_and_install
-
-    # 查询全部安装的软件的运行状态
-    query_installed_software_status
+    # 选择并执行操作
+    choose_and_perform_action
 }
 
 # 执行主函数
