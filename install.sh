@@ -129,7 +129,7 @@ uninstall_portainer() {
 install_nginx_proxy_manager() {
     echo "正在安装 Nginx Proxy Manager..."
     docker volume create npm_data
-    docker run -d -p 80:80 -p 443:443 -p 81:81 --name=npm --restart=always -v npm_data:/data -v ./letsencrypt:/etc/letsencrypt jc21/nginx-proxy-manager:latest
+    docker run -d -p 80:80 -p 443:443 -p 81:81 --name=npm --restart=always -v npm_data:/data -v ~/letsencrypt:/etc/letsencrypt jc21/nginx-proxy-manager:latest
     if [ $? -eq 0 ]; then
         echo "Nginx Proxy Manager 安装成功。访问 http://localhost:81 进行配置。"
     else
