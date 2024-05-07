@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Convert line endings of script to Unix-style
+if ! command -v dos2unix &> /dev/null
+then
+    echo "dos2unix could not be found, please install it and try again."
+    exit 1
+fi
+dos2unix "$0"
+
 # 清除可能存在的 Windows 换行符
 sed -i 's/\r$//' "$0"
 
