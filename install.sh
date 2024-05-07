@@ -63,78 +63,86 @@ install_serverstatus() {
 
 # Function to display software installation status
 display_software_status() {
-  echo -e "\nSoftware installation status:"
-  echo -e "Docker: $(is_docker_installed && echo "\033[1;32mInstalled\033[0m" || echo "\033[1;31mNot installed\033[0m")"
-  echo -e "Docker Compose: $(is_docker_compose_installed && echo "\033[1;32mInstalled\033[0m" || echo "\033[1;31mNot installed\033[0m")"
-  echo -e "Portainer: $(is_portainer_installed && echo "\033[1;32mInstalled\033[0m" || echo "\033[1;31mNot installed\033[0m")"
-  echo -e "Nginx Proxy Manager: $(is_nginx_proxy_manager_installed && echo "\033[1;32mInstalled\033[0m" || echo "\033[1;31mNot installed\033[0m")"
-  echo -e "ServerStatus: $(is_serverstatus_installed && echo "\033[1;32mInstalled\033[0m" || echo "\033[1;31mNot installed\033[0m")"
+  echo -e "\n软件安装状态:"
+  echo -e "Docker: $(is_docker_installed && echo "\033[1;32m已安装\033[0m" || echo "\033[1;31m未安装\033[0m")"
+  echo -e "Docker Compose: $(is_docker_compose_installed && echo "\033[1;32m已安装\033[0m" || echo "\033[1;31m未安装\033[0m")"
+  echo -e "Portainer: $(is_portainer_installed && echo "\033[1;32m已安装\033[0m" || echo "\033[1;31m未安装\033[0m")"
+  echo -e "Nginx Proxy Manager: $(is_nginx_proxy_manager_installed && echo "\033[1;32m已安装\033[0m" || echo "\033[1;31m未安装\033[0m")"
+  echo -e "ServerStatus: $(is_serverstatus_installed && echo "\033[1;32m已安装\033[0m" || echo "\033[1;31m未安装\033[0m")"
 }
 
 # Function to choose and perform actions
 choose_and_perform_action() {
-  local actions=("Install Docker" "Install Docker Compose" "Install Portainer" "Install Nginx Proxy Manager" "Install ServerStatus" "Check Installation Status" "Exit")
+  local actions=("安装 Docker" "安装 Docker Compose" "安装 Portainer" "安装 Nginx Proxy Manager" "安装 ServerStatus" "查看安装状态" "退出")
 
   while true; do
-    echo -e "\033[1;36mPlease choose an action:\033[0m"
+    echo -e "\033[1;36m请选择一个操作:\033[0m"
     for i in "${!actions[@]}"; do
       echo "${i}. ${actions[i]}"
     done
 
-    read -rp "Enter the option number: " choice
+    read -rp "输入选项编号: " choice
 
     if [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 0 && choice < ${#actions[@]})); then
       case "${actions[choice]}" in
-        "Install Docker")
+        "安装 Docker")
           if is_docker_installed; then
-            echo "Docker is already installed."
+            echo "Docker 已安装."
           else
             install_docker
-            echo -e "\033[1;32mDocker installed successfully.\033[0m"
+            echo -e "\033[1;32mDocker 安装成功.\033[0m"
           fi
           ;;
-        "Install Docker Compose")
+        "安装 Docker Compose")
           if is_docker_compose_installed; then
-            echo "Docker Compose is already installed."
+            echo "Docker Compose 已安装."
           else
             install_docker_compose
-            echo -e "\033[1;32mDocker Compose installed successfully.\033[0m"
+            echo -e "\033[1;32mDocker Compose 安装成功.\033[0m"
           fi
           ;;
-        "Install Portainer")
+        "安装 Portainer")
           if is_portainer_installed; then
-            echo "Portainer is already installed."
+            echo "Portainer 已安装."
           else
             install_portainer
-            echo -e "\033[1;32mPortainer installed successfully.\033[0m"
+            echo -e "\033[1;32mPortainer 安装成功.\033[0m"
           fi
           ;;
-        "Install Nginx Proxy Manager")
+        "安装 Nginx Proxy Manager")
           if is_nginx_proxy_manager_installed; then
-            echo "Nginx Proxy Manager is already installed."
+            echo "Nginx Proxy Manager 已安装."
           else
             install_nginx_proxy_manager
-            echo -e "\033[1;32mNginx Proxy Manager installed successfully.\033[0m"
+            echo -e "\033[1;32mNginx Proxy Manager 安装成功.\033[0m"
           fi
           ;;
-        "Install ServerStatus")
+        "安装 ServerStatus")
           if is_serverstatus_installed; then
-            echo "ServerStatus is already installed."
+            echo "ServerStatus 已安装."
           else
             install_serverstatus
-            echo -e "\033[1;32mServerStatus installed successfully.\033[0m"
+            echo -e "\033[1;32mServerStatus 安装成功.\033[0m"
           fi
           ;;
-        "Check Installation Status")
+        "查看安装状态")
           display_software_status
           ;;
-        "Exit")
-          echo -e "\033[1;36mExiting...\033[0m"
+        "退出")
+          echo -e "\033[1;36m退出...\033[0m"
+          clear # Clear the terminal screen
+          echo -e "\033[1;36m--------------------------------------------------\033[0m"
+          echo -e "\033[1;36m|                                              |\033[0m"
+          echo -e "\033[1;36m|           \033[1;32m壹哥传媒\033[1;36m                  |\033[0m"
+          echo -e "\033[1;36m|                                              |\033[0m"
+          echo -e "\033[1;36m|  如果您觉得这个脚本有用, 请考虑购买我一杯咖啡: V:Atian-show   |\033[0m"
+          echo -e "\033[1;36m|                                              |\033[0m"
+          echo -e "\033[1;36m--------------------------------------------------\033[0m"
           exit 0
           ;;
       esac
     else
-      echo -e "\033[1;31mInvalid option, please choose again.\033[0m"
+      echo -e "\033[1;31m无效的选项, 请重新选择.\033[0m"
     fi
   done
 }
@@ -142,7 +150,7 @@ choose_and_perform_action() {
 # Main function
 main() {
   # Update system
-  echo -e "\033[1;36mUpdating system...\033[0m"
+  echo -e "\033[1;36m更新系统...\033[0m"
   if is_command_available apt-get; then
     sudo apt-get update && sudo apt-get upgrade -y
   elif is_command_available yum; then
@@ -152,7 +160,7 @@ main() {
   elif is_command_available zypper; then
     sudo zypper refresh && sudo zypper update -y
   else
-    echo -e "\033[1;31mUnsupported package manager. Please update your system manually.\033[0m"
+    echo -e "\033[1;31m不支持的软件包管理器. 请手动更新系统.\033[0m"
     exit 1
   fi
 
@@ -162,12 +170,3 @@ main() {
 
 # Run the main function
 main
-
-# --------------------------------------------------
-# |                                                |
-# |          \033[1;36m壹哥传媒\033[0m                  |
-# |                                                |
-# |  If you find this script helpful, please consider |
-# |          buying me a cup of coffee: 188151151  |
-# |                                                |
-# --------------------------------------------------
