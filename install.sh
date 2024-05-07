@@ -103,7 +103,7 @@ install_portainer() {
     docker volume create portainer_data
     docker run -d -p 9000:9000 -p 8000:8000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce
     if [ $? -eq 0 ]; then
-        echo "Portainer 安装成功。访问 http://localhost:9000 进行配置。"
+        echo "Portainer 安装成功。访问 <http://localhost:9000> 进行配置。"
     else
         echo "Portainer 安装失败，请检查错误信息。"
         exit 1
@@ -129,9 +129,9 @@ uninstall_portainer() {
 install_nginx_proxy_manager() {
     echo "正在安装 Nginx Proxy Manager..."
     docker volume create npm_data
-    docker run -d -p 80:80 -p 443:443 -p 81:81 --name=npm --restart=always -v npm_data:/data -v ./letsencrypt:/etc/letsencrypt jc21/nginx-proxy-manager:latest
+    docker run -d -p 80:80 -p 443:443 -p 81:81 --name=npm --restart=always -v npm_data:/data -v ~/letsencrypt:/etc/letsencrypt jc21/nginx-proxy-manager:latest
     if [ $? -eq 0 ]; then
-        echo "Nginx Proxy Manager 安装成功。访问 http://localhost:81 进行配置。"
+        echo "Nginx Proxy Manager 安装成功。访问 <http://localhost:81> 进行配置。"
     else
         echo "Nginx Proxy Manager 安装失败，请检查错误信息。"
         exit 1
@@ -156,10 +156,11 @@ uninstall_nginx_proxy_manager() {
 # Function to install ServerStatus
 install_serverstatus() {
     echo "正在安装 ServerStatus..."
-    wget --no-check-certificate -qO ~/serverstatus-config.json https://raw.githubusercontent.com/cppla/ServerStatus/master/server/config.json && mkdir ~/serverstatus-monthtraffic
+    wget --no-check-certificate -qO ~/serverstatus-config.json https://raw.githubusercontent.com/cppla/ServerStatus/master/server/config.json && \
+    mkdir ~/serverstatus-monthtraffic && \
     docker run -d --restart=always --name=serverstatus -v ~/serverstatus-config.json:/ServerStatus/server/config.json -v ~/serverstatus-monthtraffic:/usr/share/nginx/html/json -p 7777:80 -p 35601:35601 cppla/serverstatus:latest
     if [ $? -eq 0 ]; then
-        echo "ServerStatus 安装成功。访问 http://localhost:7777 查看状态。"
+        echo "ServerStatus 安装成功。访问 <http://localhost:7777> 查看状态。"
     else
         echo "ServerStatus 安装失败，请检查错误信息。"
         exit 1
@@ -397,6 +398,18 @@ main() {
 
     # 选择并执行操作
     choose_and_perform_action
+
+    # 添加署名
+    echo ""
+    echo "--------------------------------------------------"
+    echo "|                                                 |"
+    echo "|                  壹哥传媒                        |"
+    echo "|                                                 |"
+    echo "|  如果您觉得这个脚本有用, 请考虑购买我一杯咖啡:         |" 
+    echo "|               V:Atian-show                      |"
+    echo "|                                                 |"
+    echo "--------------------------------------------------"
+    echo ""
 }
 
 # 执行主函数
