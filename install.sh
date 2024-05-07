@@ -13,7 +13,7 @@ sed -i 's/\r$//' "$0"
 
 # 下载安装脚本
 download_script() {
-    local script_url="https://raw.githubusercontent.com/atianshow/ygmaa/main/install.sh"
+    local script_url="https://raw.githubusercontent.com/atianshow/sh/main/install.sh"
     echo "正在下载安装脚本..."
     if ! curl -sSfL -o install.sh "$script_url"; then
         echo "下载安装脚本失败，请检查网络连接或手动下载安装脚本。"
